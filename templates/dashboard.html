@@ -1,75 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Balancing & Logistics Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ role.upper() }} Dashboard</title>
     <style>
-        body { font-family: sans-serif; margin: 0; background-color: #f0f2f5; }
-        .navbar { background-color: #1a73e8; overflow: hidden; display: flex; justify-content: center; flex-wrap: wrap;}
-        .navbar a { color: white; padding: 14px 20px; text-decoration: none; font-weight: bold; }
-        .navbar a:hover, .navbar a.active { background-color: #0056b3; }
-        
-        .container { padding: 20px; max-width: 900px; margin: auto; text-align: center; }
-        h2 { color: #333; }
-        
-        /* The Flowchart Pipeline */
-        .pipeline { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; flex-wrap: wrap; }
-        .node { background: white; padding: 20px; border-radius: 10px; width: 140px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 5px solid #1a73e8; }
-        .node h3 { margin: 0 0 10px 0; font-size: 18px; color: #555; }
-        .node .number { font-size: 24px; font-weight: bold; color: #1a73e8; }
-        
-        .arrow { font-weight: bold; color: #d9534f; font-size: 16px; background: #fdf5f5; padding: 5px 10px; border-radius: 5px; border: 1px dashed #d9534f;}
+        body { font-family: sans-serif; padding: 20px; background: #f8f9fa; }
+        .balance-box { background: #fff; padding: 15px; border-left: 5px solid #28a745; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background: #1a73e8; color: white; }
+        .btn { padding: 8px 12px; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block; }
+        .btn-green { background: #28a745; } .btn-orange { background: #fd7e14; }
     </style>
 </head>
 <body>
+    <h1>Department: {{ role.upper() }}</h1>
 
-    <div class="navbar">
-        <a href="/">Data Entry</a>
-        <a href="/workshop">Workshop</a>
-        <a href="/program">Program</a>
-        <a href="/store">Store Logistics</a>
-        <a href="/balancing" class="active">Balancing</a>
-        <a href="/distribution">Distribution</a>
+    <div class="balance-box">
+        <strong>Current Store Inventory:</strong>
+        {% for clinic, bal in balances.items() %}
+            {% if bal != 0 %} <span>| {{ clinic }}: {{ bal }} </span> {% endif %}
+        {% endfor %}
     </div>
 
-    <div class="container">
-        <h2>Global Balancing Overview</h2>
-        <p>Live inventory flow from Program targets down to Patient logistics.</p>
-        
-        <div class="pipeline">
-            <div class="node">
-                <h3>Program</h3>
-                <div class="number">{{ data.program }}</div>
-            </div>
-            
-            <div class="arrow">
-                Gap: -{{ data.program - data.workshop }}<br>&#10230;
-            </div>
-            
-            <div class="node">
-                <h3>Workshop</h3>
-                <div class="number">{{ data.workshop }}</div>
-            </div>
-            
-            <div class="arrow">
-                Holding: -{{ data.workshop - data.store }}<br>&#10230;
-            </div>
-            
-            <div class="node">
-                <h3>Store</h3>
-                <div class="number">{{ data.store }}</div>
-            </div>
-            
-            <div class="arrow">
-                Shipped<br>&#10230;
-            </div>
-            
-            <div class="node">
-                <h3>70 Clinics</h3>
-                <div class="number">{{ data.distributed }}</div>
-            </div>
-        </div>
-    </div>
-
+    <table>
+        <tr><th>Clinic</th><th>Brace</th><th>Qty</th><th>Status</th><th>Action</th></tr>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.Clinic }}</td><td>Size {{ order.Size }}</td><td>{{ order.Qty }}</td><td>{{ order.Status }}</td>
+            <td>
+                {% if role == "coordinator" and order.Status == "Pending Approval" %}
+                    <a href="/transition/{{ loop.index0 }}/In Production" class="btn btn-green">Approve Production</a>
+                {% elif role == "workshop" %}
+                    <a href="/transition/{{ loop.index0 }}/Produced" class="btn btn-orange">Handover to Store</a>
+                {% elif role == "store" and order.Status == "Produced" %}
+                    <a href="/transition/{{ loop.index0 }}/In Store" class="btn btn-green">Receive (+1 Balance)</a>
+                {% elif role == "store" and order.Status == "In Store" %}
+                    <a href="/transition/{{ loop.index0 }}/Dist. Requested" class="btn btn-orange">Request Dispatch</a>
+                {% elif role == "coordinator" and order.Status == "Dist. Requested" %}
+                    <a href="/transition/{{ loop.index0 }}/Dist. Approved" class="btn btn-green">Approve Dispatch</a>
+                {% elif role == "store" and order.Status == "Dist. Approved" %}
+                    <a href="/transition/{{ loop.index0 }}/Dispatched" class="btn btn-orange">Confirm Dispatch (-1 Balance)</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
