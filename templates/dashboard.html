@@ -1,68 +1,78 @@
-import uuid
-from flask import Flask, render_template, request, redirect
-import gspread
-from google.oauth2.service_account import Credentials
-from datetime import datetime
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logistics Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f9; margin: 0; padding: 20px; }
+        .header { background: #1a73e8; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, min-minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border-top: 5px solid #1a73e8; }
+        .stat-card h3 { margin: 0; color: #5f6368; font-size: 14px; text-transform: uppercase; }
+        .stat-card .number { font-size: 32px; font-weight: bold; color: #202124; margin: 10px 0; }
+        
+        /* Balance Table */
+        .table-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h2 { color: #1a73e8; border-bottom: 2px solid #e8eaed; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e8eaed; }
+        th { background-color: #f8f9fa; color: #5f6368; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .in-stock { background: #e6f4ea; color: #1e8e3e; }
+        
+        .nav-link { display: inline-block; margin-top: 20px; color: #1a73e8; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-app = Flask(__name__)
-SHEET_NAME = "Brace_Logistics_Database"
+    <div class="header">
+        <h1>Brace Inventory & Logistics Dashboard</h1>
+        <p>Real-time tracking of Clinic Requests and Store Balances</p>
+    </div>
 
-def get_sheet():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_file('credentials.json', scopes=scope)
-    client = gspread.authorize(creds)
-    return client.open(SHEET_NAME).sheet1
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total in Store</h3>
+            <div class="number">{{ total_in_store }}</div>
+        </div>
+        <div class="stat-card" style="border-top-color: #34a853;">
+            <h3>Ready for Dispatch</h3>
+            <div class="number">{{ ready_to_dispatch }}</div>
+        </div>
+        <div class="stat-card" style="border-top-color: #fbbc04;">
+            <h3>In Production</h3>
+            <div class="number">{{ in_production }}</div>
+        </div>
+    </div>
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+    <div class="table-container">
+        <h2>Clinic Stock Levels (+1 / -1)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Clinic Name</th>
+                    <th>Current Balance</th>
+                    <th>Last Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for clinic, bal in balances.items() %}
+                <tr>
+                    <td><strong>{{ clinic }}</strong></td>
+                    <td>
+                        <span class="status-badge {% if bal > 0 %}in-stock{% endif %}">
+                            {{ bal }} Units
+                        </span>
+                    </td>
+                    <td>Live in Store</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/" class="nav-link">← Return to Order Entry</a>
+    </div>
 
-# 1. PRODUCTION REQUEST
-@app.route('/submit', methods=['POST'])
-def submit():
-    try:
-        data = [datetime.now().strftime("%Y-%m-%d %H:%M"), request.form.get('clinic_name'), 
-                request.form.get('brace_type'), request.form.get('brace_size'), 
-                request.form.get('quantity'), "Pending Approval", ""]
-        get_sheet().append_row(data)
-        return "<h1>Success! Request Sent.</h1><script>setTimeout(()=> {window.location.href='/';}, 2000);</script>"
-    except Exception as e: return str(e)
-
-# 2. DEPARTMENT PORTALS
-@app.route('/portal/<role>')
-def portal(role):
-    sheet = get_sheet()
-    rows = sheet.get_all_records()
-    
-    # Logic: +1 for "In Store", -1 for "Dispatched"
-    balances = {}
-    for r in rows:
-        c = r['Clinic']
-        q = int(r.get('Qty', 0))
-        if c not in balances: balances[c] = 0
-        if r['Status'] == "In Store": balances[c] += q
-        if r['Status'] == "Dispatched": balances[c] -= q
-
-    # Filter orders based on the "Lock" status
-    if role == "coordinator":
-        orders = [r for r in rows if r['Status'] in ["Pending Approval", "Dist. Requested"]]
-    elif role == "workshop":
-        orders = [r for r in rows if r['Status'] == "In Production"]
-    elif role == "store":
-        orders = [r for r in rows if r['Status'] in ["Produced", "Dist. Approved", "In Store"]]
-    else: orders = []
-
-    return render_template('workflow.html', role=role, orders=orders, balances=balances)
-
-# 3. THE APPROVAL LOCK & TRANSITION
-@app.route('/transition/<int:row_idx>/<next_status>')
-def transition(row_idx, next_status):
-    sheet = get_sheet()
-    actual_row = row_idx + 2
-    if next_status == "Dispatched":
-        sheet.update_cell(actual_row, 7, f"M19-{uuid.uuid4().hex[:6].upper()}")
-    sheet.update_cell(actual_row, 6, next_status)
-    return redirect(request.referrer)
-
-if __name__ == "__main__":
-    app.run()
+</body>
+</html>
