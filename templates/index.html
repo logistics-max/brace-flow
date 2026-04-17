@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Logistics Workflow System</title>
+    <title>Brace Logistics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
         .nav { background: #1a73e8; padding: 15px; text-align: center; }
-        .nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
-        .container { max-width: 500px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .nav a { color: white; text-decoration: none; margin: 0 10px; font-weight: bold; }
+        .card { max-width: 450px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         label { display: block; margin-top: 15px; font-weight: bold; }
         input, select, button { width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
         button { background: #28a745; color: white; border: none; font-size: 18px; cursor: pointer; }
@@ -14,69 +15,27 @@
 </head>
 <body>
     <div class="nav">
-        <a href="/">Clinic Entry</a>
-        <a href="/portal/coordinator">Coordinator</a>
-        <a href="/portal/workshop">Workshop</a>
-        <a href="/portal/store">Store Logistics</a>
+        <a href="/">Request</a> | <a href="/portal/coordinator">Coordinator</a> | <a href="/portal/workshop">Workshop</a> | <a href="/portal/store">Store</a>
     </div>
-    <div class="container">
-        <h2 style="color:#1a73e8; text-align:center;">Production Request</h2>
+    <div class="card">
+        <h2>New Production Request</h2>
         <form action="/submit" method="POST">
-            <label>Select Clinic:</label>
-            <input list="clinics" name="clinic_name" placeholder="Search 70 clinics..." required>
+            <label>Clinic:</label>
+            <input list="clinics" name="clinic_name" required>
             <datalist id="clinics">
                 <option value="Abebech Gobena MCH Hospital"><option value="Alert Comprehensive Hospital">
                 <option value="Black Lion Hospital"><option value="CURE Hospital Addis Ababa">
-                <option value="St. Paul Abet Hospital"><option value="St. Peters Specialized Hospital">
-                <option value="Tirunesh Beijing General Hospital"><option value="Yeka Kotebe Hospital">
-                <option value="Dubti Referral Hospital"><option value="Abala/Mohammed Akle Memorial Hospital">
-                <option value="Debark General Hospital"><option value="Debere Birhane Referral Hospital">
-                <option value="Debre Markos Hospital"><option value="Debre Tabor Hospital">
-                <option value="Dessie Physical Rehabilitation Center"><option value="Dessie Referral Hospital">
-                <option value="Felege Hiwot Hospital Bahirdar"><option value="Finote Selam Hospital">
-                <option value="Gondar University Hospital"><option value="Injibara Hospital">
-                <option value="Kemise General Hospital"><option value="Woldiya Specialized Hospital">
-                <option value="Asossa Hospital"><option value="Grarbet Hospital Butajira">
-                <option value="Halaba Hospital"><option value="Worabe Comprehensive Specialized Hospital">
-                <option value="Nigist Heleni Hospital Hossana"><option value="Wolkite University Hospital">
-                <option value="Sabian General Hospital"><option value="Gambela Referral Hospital">
-                <option value="Hiwot Fana Hospital Harrer"><option value="Dembi Dollo">
-                <option value="Shambu"><option value="Gimbi and Ayra">
-                <option value="Adama Referral Hospital"><option value="Adola Hospital">
-                <option value="Ambo Hospital"><option value="Assela Referral Hospital">
-                <option value="Bale Goba Hospital"><option value="Chero Zonal Hospital">
-                <option value="Deder Hospital"><option value="Gelemso General Hospital">
-                <option value="Jimma University Hospital"><option value="Metu Karl Referral Hospital">
-                <option value="Moyale Hospital/Ginir"><option value="Nekemt Referral Hospital">
-                <option value="Selale Comprehensive Specialized Hospital"><option value="Shashemene General Hospital">
-                <option value="Wolliso Hospital"><option value="Bule Hora">
-                <option value="Konso"><option value="Arbaminch Physical Rehabilitation Center">
-                <option value="Dilla University Referral Hospital"><option value="Jinka Hospital">
-                <option value="Sawola General Hospital"><option value="Wolaita Sodo University Hospital">
-                <option value="Adare General Hospital/Busulo"><option value="Bona">
-                <option value="Hawassa Referral Hospital"><option value="Yirgalem Hospital">
-                <option value="Gode Hospital"><option value="Karamara Referral Hospital">
-                <option value="Filtu General Hospital"><option value="Bonga">
-                <option value="Mizan Tepi University Teaching Hospital"><option value="Addigrat Hospital">
-                <option value="Lemlem Karl Hospital Maichew"><option value="Mekelle Referral Hospital">
-                <option value="St. Mary Hospital/Axum"><option value="Suhul Hospital">
-            </datalist>
+                <option value="St. Paul Abet Hospital"><option value="Felege Hiwot Hospital">
+                <option value="Yirgalem Hospital"><option value="Worabe Specialized Hospital">
+                </datalist>
 
-            <label>Brace Type:</label>
-            <select name="brace_type">
-                <option value="AFO Shoe Brace">AFO Shoe Brace</option>
-                <option value="KAFO Shoe Brace">KAFO Shoe Brace</option>
-            </select>
-
-            <label>Size (4 to 16):</label>
+            <label>Brace Size:</label>
             <select name="brace_size">
-                {% for i in range(4, 17) %}
-                <option value="{{ i }}">Size {{ i }}</option>
-                {% endfor %}
+                {% for i in range(4, 17) %} <option value="{{i}}">Size {{i}}</option> {% endfor %}
             </select>
 
             <label>Quantity:</label>
-            <input type="number" name="quantity" value="1" min="1">
+            <input type="number" name="quantity" value="1">
 
             <button type="submit">Send to Coordinator</button>
         </form>
