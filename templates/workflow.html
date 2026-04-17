@@ -4,40 +4,38 @@
     <title>{{ role.upper() }} Portal</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background: #f8f9fa; }
-        .balance-card { background: white; padding: 15px; border-left: 5px solid #28a745; margin-bottom: 20px; }
+        .balance-box { background: white; padding: 15px; border-left: 5px solid #28a745; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
         th { background: #1a73e8; color: white; }
         .btn { padding: 8px 12px; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; }
-        .bg-appr { background: #28a745; } .bg-work { background: #fd7e14; }
+        .green { background: #28a745; } .orange { background: #fd7e14; }
     </style>
 </head>
 <body>
     <h1>Department: {{ role.upper() }}</h1>
-
-    <div class="balance-card">
-        <h3>Inventory Balance (In Store)</h3>
-        {% for clinic, bal in balances.items() %}
-            {% if bal != 0 %}
-            <p><strong>{{ clinic }}:</strong> {{ bal }} Unit(s)</p>
-            {% endif %}
-        {% endfor %}
+    <div class="balance-box">
+        <strong>Live Inventory:</strong>
+        {% for clinic, bal in balances.items() %}{% if bal > 0 %} [{{ clinic }}: {{ bal }}] {% endif %}{% endfor %}
     </div>
-
     <table>
-        <tr><th>Clinic</th><th>Brace</th><th>Size</th><th>Qty</th><th>Action</th></tr>
+        <tr><th>Clinic</th><th>Item</th><th>Qty</th><th>Status</th><th>Action</th></tr>
         {% for order in orders %}
         <tr>
-            <td>{{ order.Clinic }}</td><td>{{ order['Brace Type'] }}</td><td>{{ order.Size }}</td><td>{{ order.Qty }}</td>
+            <td>{{ order.Clinic }}</td><td>Size {{ order.Size }}</td><td>{{ order.Qty }}</td><td>{{ order.Status }}</td>
             <td>
                 {% if role == "coordinator" and order.Status == "Pending Approval" %}
-                    <a href="/transition/{{ loop.index0 }}/In Production" class="btn bg-appr">Approve Production</a>
+                    <a href="/transition/{{ loop.index0 }}/In Production" class="btn green">Approve Production</a>
                 {% elif role == "workshop" %}
-                    <a href="/transition/{{ loop.index0 }}/Produced" class="btn bg-work">Finished (To Store)</a>
+                    <a href="/transition/{{ loop.index0 }}/Produced" class="btn orange">Handover to Store</a>
                 {% elif role == "store" and order.Status == "Produced" %}
-                    <a href="/transition/{{ loop.index0 }}/In Store" class="btn bg-appr">Receive (+1 Balance)</a>
+                    <a href="/transition/{{ loop.index0 }}/In Store" class="btn green">Receive (+1 Balance)</a>
+                {% elif role == "store" and order.Status == "In Store" %}
+                    <a href="/transition/{{ loop.index0 }}/Dist. Requested" class="btn orange">Request Dispatch</a>
+                {% elif role == "coordinator" and order.Status == "Dist. Requested" %}
+                    <a href="/transition/{{ loop.index0 }}/Dist. Approved" class="btn green">Approve Dispatch</a>
                 {% elif role == "store" and order.Status == "Dist. Approved" %}
-                    <a href="/transition/{{ loop.index0 }}/Dispatched" class="btn bg-work">Dispatch Logistics (-1 Balance)</a>
+                    <a href="/transition/{{ loop.index0 }}/Dispatched" class="btn orange">Final Dispatch (-1 Balance)</a>
                 {% endif %}
             </td>
         </tr>
