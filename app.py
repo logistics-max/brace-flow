@@ -1,16 +1,17 @@
-from flask import Flask, render_template, request, redirect
+import os
+from flask import Flask, render_template, request
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
 app = Flask(__name__)
 
-# IMPORTANT: Make sure this name matches your Google Sheet EXACTLY
+# CONFIGURATION
 SHEET_NAME = "Brace_Logistics_Database"
 
-def get_google_sheet():
+def get_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    # Ensure credentials.json is uploaded to your GitHub main folder
+    # Ensure credentials.json is in your main GitHub folder
     creds = Credentials.from_service_account_file('credentials.json', scopes=scope)
     client = gspread.authorize(creds)
     return client.open(SHEET_NAME).sheet1
@@ -22,26 +23,32 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
-        # Get data from the form
+        # Capture Form Data
         clinic = request.form.get('clinic_name')
         brace = request.form.get('brace_type')
         size = request.form.get('brace_size')
         qty = request.form.get('quantity')
-        date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Send to Google Sheet
-        sheet = get_google_sheet()
-        sheet.append_row([date_str, clinic, brace, size, qty])
+        # Write to Google Sheet
+        sheet = get_sheet()
+        sheet.append_row([timestamp, clinic, brace, size, qty])
         
-        # This sends you back to the form so you can enter more data immediately
-        return "<h1>Success! Order Added to Google Sheet.</h1><br><a href='/'>Click here to enter another order</a>"
+        return f"""
+        <div style="text-align:center; padding:50px; font-family:sans-serif;">
+            <h1 style="color:green;">✔ Order Received!</h1>
+            <p>Sent to Sheet: {clinic} - {brace} (Size {size}) x{qty}</p>
+            <a href="/" style="padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">Enter Another Order</a>
+        </div>
+        """
     except Exception as e:
-        return f"<h1>Error Connection: {e}</h1><p>Check if your Google Sheet is named: {SHEET_NAME}</p>"
+        return f"<h1 style='color:red;'>Error!</h1><p>{str(e)}</p><a href='/'>Try Again</a>"
 
 @app.route('/balancing')
 def balancing():
-    data = {'program': 20000, 'workshop': 15000, 'store': 8000, 'gap_workshop': 5000, 'gap_store': 7000}
-    return render_template('dashboard.html', data=data)
+    # Numbers from your handwritten drawing
+    stats = {'prog': 20000, 'work': 15000, 'store': 8000, 'gap1': 5000, 'gap2': 7000}
+    return render_template('dashboard.html', data=stats)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
