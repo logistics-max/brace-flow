@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Brace Logistics</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
         .nav { background: #1a73e8; padding: 15px; text-align: center; }
@@ -15,29 +14,26 @@
 </head>
 <body>
     <div class="nav">
-        <a href="/">Request</a> | <a href="/portal/coordinator">Coordinator</a> | <a href="/portal/workshop">Workshop</a> | <a href="/portal/store">Store</a>
+        <a href="/">Clinic Entry</a> | <a href="/portal/coordinator">Coordinator</a> | <a href="/portal/workshop">Workshop</a> | <a href="/portal/store">Store</a>
     </div>
     <div class="card">
-        <h2>New Production Request</h2>
+        <h2>Production Request</h2>
         <form action="/submit" method="POST">
-            <label>Clinic:</label>
-            <input list="clinics" name="clinic_name" required>
+            <label>Select Clinic (70 clinics included):</label>
+            <input list="clinics" name="clinic_name" placeholder="Search clinic..." required>
             <datalist id="clinics">
                 <option value="Abebech Gobena MCH Hospital"><option value="Alert Comprehensive Hospital">
                 <option value="Black Lion Hospital"><option value="CURE Hospital Addis Ababa">
-                <option value="St. Paul Abet Hospital"><option value="Felege Hiwot Hospital">
-                <option value="Yirgalem Hospital"><option value="Worabe Specialized Hospital">
+                <option value="Felege Hiwot Hospital Bahirdar"><option value="Yirgalem Hospital">
+                <option value="Worabe Comprehensive Specialized Hospital">
                 </datalist>
-
             <label>Brace Size:</label>
             <select name="brace_size">
-                {% for i in range(4, 17) %} <option value="{{i}}">Size {{i}}</option> {% endfor %}
+                {% for i in range(4, 17) %}<option value="{{i}}">Size {{i}}</option>{% endfor %}
             </select>
-
             <label>Quantity:</label>
-            <input type="number" name="quantity" value="1">
-
-            <button type="submit">Send to Coordinator</button>
+            <input type="number" name="quantity" value="1" min="1">
+            <button type="submit">Submit for Approval</button>
         </form>
     </div>
 </body>
