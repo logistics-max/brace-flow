@@ -1,52 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Brace Logistics Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Balancing & Logistics Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: sans-serif; margin: 0; background-color: #f0f2f5; }
+        .navbar { background-color: #1a73e8; overflow: hidden; display: flex; justify-content: center; flex-wrap: wrap;}
+        .navbar a { color: white; padding: 14px 20px; text-decoration: none; font-weight: bold; }
+        .navbar a:hover, .navbar a.active { background-color: #0056b3; }
+        
+        .container { padding: 20px; max-width: 900px; margin: auto; text-align: center; }
+        h2 { color: #333; }
+        
+        /* The Flowchart Pipeline */
+        .pipeline { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; flex-wrap: wrap; }
+        .node { background: white; padding: 20px; border-radius: 10px; width: 140px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 5px solid #1a73e8; }
+        .node h3 { margin: 0 0 10px 0; font-size: 18px; color: #555; }
+        .node .number { font-size: 24px; font-weight: bold; color: #1a73e8; }
+        
+        .arrow { font-weight: bold; color: #d9534f; font-size: 16px; background: #fdf5f5; padding: 5px 10px; border-radius: 5px; border: 1px dashed #d9534f;}
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 mb-4 shadow">
-    <span class="navbar-brand fw-bold">BRACE LOGISTICS 2026</span>
-    
-    <div class="ms-auto d-flex align-items-center">
-        <span class="text-light me-3">User: <strong>{{ session['username'] }}</strong></span>
-        
-        {% if role == 'Admin' %}
-            <a href="{{ url_for('admin_panel') }}" class="btn btn-warning btn-sm me-2">⚙️ ADMIN PANEL</a>
-        {% endif %}
-        
-        <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">LOGOUT</a>
+    <div class="navbar">
+        <a href="/">Data Entry</a>
+        <a href="/workshop">Workshop</a>
+        <a href="/program">Program</a>
+        <a href="/store">Store Logistics</a>
+        <a href="/balancing" class="active">Balancing</a>
+        <a href="/distribution">Distribution</a>
     </div>
-</nav>
 
-<div class="container-fluid px-4">
-    <h2>Clinic Inventory</h2>
-    <div class="table-responsive bg-white shadow-sm p-3 rounded">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>Clinic Name</th>
-                    {% for s in range(4, 17) %}
-                        <th>Size {{ s }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for clinic in clinics %}
-                <tr>
-                    <td class="fw-bold">{{ clinic.location_name }}</td>
-                    {% for s in range(4, 17) %}
-                        {% set inv = get_inv(clinic.location_name, s) %}
-                        <td>{{ inv.quantity if inv else 0 }}</td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="container">
+        <h2>Global Balancing Overview</h2>
+        <p>Live inventory flow from Program targets down to Patient logistics.</p>
+        
+        <div class="pipeline">
+            <div class="node">
+                <h3>Program</h3>
+                <div class="number">{{ data.program }}</div>
+            </div>
+            
+            <div class="arrow">
+                Gap: -{{ data.program - data.workshop }}<br>&#10230;
+            </div>
+            
+            <div class="node">
+                <h3>Workshop</h3>
+                <div class="number">{{ data.workshop }}</div>
+            </div>
+            
+            <div class="arrow">
+                Holding: -{{ data.workshop - data.store }}<br>&#10230;
+            </div>
+            
+            <div class="node">
+                <h3>Store</h3>
+                <div class="number">{{ data.store }}</div>
+            </div>
+            
+            <div class="arrow">
+                Shipped<br>&#10230;
+            </div>
+            
+            <div class="node">
+                <h3>70 Clinics</h3>
+                <div class="number">{{ data.distributed }}</div>
+            </div>
+        </div>
     </div>
-</div>
 
 </body>
 </html>
