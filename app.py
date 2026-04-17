@@ -87,7 +87,8 @@ def transfer():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    with app.run(host='0.0.0.0',port=5000
+    with if __name__ == '__main__':
+    app.run(debug=True)
         db.create_all()
         if Inventory.query.count() == 0:
             for loc in ["Workshop", "Medical Store"]:
