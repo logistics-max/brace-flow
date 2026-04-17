@@ -5,7 +5,6 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# --- GOOGLE SHEETS CONFIG ---
 SHEET_NAME = "Brace_Logistics_Database"
 
 def get_google_sheet():
@@ -21,18 +20,21 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
+        # Get data from the form
         clinic = request.form.get('clinic_name')
         brace = request.form.get('brace_type')
+        size = request.form.get('brace_size')
         qty = request.form.get('quantity')
         
+        # Create timestamp
         now = datetime.now()
         date_str = now.strftime("%Y-%m-%d %H:%M:%S")
-        day_str = now.strftime("%A")
-        month_str = now.strftime("%B")
 
+        # Send to Google Sheet
         sheet = get_google_sheet()
-        sheet.append_row([date_str, day_str, month_str, clinic, brace, qty])
-        return "<h1>Success! Data sent to Google Sheets.</h1><a href='/'>Back to Form</a>"
+        sheet.append_row([date_str, clinic, brace, size, qty])
+        
+        return "<h1>Success! Data recorded.</h1><a href='/'>Submit another order</a>"
     except Exception as e:
         return f"<h1>Error: {e}</h1>"
 
