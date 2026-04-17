@@ -5,7 +5,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Replace with your actual Google Sheet name
+# Use your exact Google Sheet name
 SHEET_NAME = "Brace_Logistics_Database"
 
 def get_google_sheet():
@@ -22,36 +22,44 @@ def index():
 def submit():
     try:
         clinic = request.form.get('clinic_name')
+        brace = request.form.get('brace_type')
         size = request.form.get('brace_size')
         qty = request.form.get('quantity')
         date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         sheet = get_google_sheet().sheet1
-        sheet.append_row([date_str, clinic, "Brace", size, qty])
-        return "<h1>Success!</h1><a href='/'>Back</a>"
+        sheet.append_row([date_str, clinic, brace, size, qty])
+        return "<h1>Success! Data Sent to Sheet.</h1><a href='/'>Back to Entry</a>"
     except Exception as e:
         return f"<h1>Error: {e}</h1>"
 
 @app.route('/balancing')
 def balancing():
-    # Example logic using numbers from your "Balancing" diagram
-    # Program: 20,000 | Workshop: 15,000 | Store: 8,000
-    pipeline_data = {
+    # Math from your handwritten drawing: Program(20k) -> Workshop(15k) -> Store(8k)
+    data = {
         'program': 20000,
         'workshop': 15000,
         'store': 8000,
-        'distributed': 8000,
-        'gap_workshop': 5000, # Program - Workshop
-        'gap_store': 7000     # Workshop - Store
+        'gap_workshop': 5000,
+        'gap_store': 7000
     }
-    return render_template('dashboard.html', data=pipeline_data)
+    return render_template('dashboard.html', data=data)
 
-# Dummy routes for other sections
 @app.route('/workshop')
+def workshop():
+    return "<h1>Workshop Production Page</h1><p>Status: Active</p><a href='/'>Home</a>"
+
 @app.route('/program')
+def program():
+    return "<h1>Program Goals Page</h1><p>Target: 20,000 Braces</p><a href='/'>Home</a>"
+
 @app.route('/store')
-def placeholder():
-    return "<h1>Section coming soon</h1><a href='/'>Back Home</a>"
+def store():
+    return "<h1>Store Logistics</h1><p>Current Stock: 8,000</p><a href='/'>Home</a>"
+
+@app.route('/distribution')
+def distribution():
+    return "<h1>Distribution Center</h1><p>Clinic Deliveries in Progress</p><a href='/'>Home</a>"
 
 if __name__ == "__main__":
     app.run()
