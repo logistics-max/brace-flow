@@ -1,4 +1,3 @@
-import os
 from flask import Flask, render_template, request
 import gspread
 from google.oauth2.service_account import Credentials
@@ -35,7 +34,7 @@ def submit():
         sheet.append_row([date_str, day_str, month_str, clinic, brace, qty])
         return "<h1>Success! Data sent to Google Sheets.</h1><a href='/'>Back to Form</a>"
     except Exception as e:
-        return f"<h1>Error: {e}</h1><p>Ensure your Sheet is shared with the email in credentials.json</p>"
+        return f"<h1>Error: {e}</h1>"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
