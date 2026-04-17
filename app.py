@@ -7,60 +7,68 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# Connect to Google Sheets safely
 def get_sheet():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         creds = Credentials.from_service_account_file('credentials.json', scopes=scope)
         client = gspread.authorize(creds)
         return client.open("Brace_Logistics_Database").sheet1
-    except:
+    except Exception as e:
+        print(f"Error: {e}")
         return None
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# This exactly matches the button on your HTML page
 @app.route('/submit_request', methods=['POST'])
 def submit_request():
     sheet = get_sheet()
-    if not sheet: return "Database Connection Error"
+    if not sheet: 
+        return "Database Connection Error - Check credentials"
+    
     try:
+        # Collects data from the form safely
         data = [
             datetime.now().strftime("%Y-%m-%d %H:%M"),
-            request.form.get('clinic_name'),
-            request.form.get('brace_type'),
-            request.form.get('brace_size'),
-            request.form.get('quantity'),
+            request.form.get('clinic_name', 'Unknown'),
+            request.form.get('brace_type', 'AFO'),
+            request.form.get('brace_size', '4'),
+            request.form.get('quantity', '1'),
             "Pending Approval",
             ""
         ]
         sheet.append_row(data)
-        return "<h1>✔ Success! Sent to Coordinator.</h1><a href='/'>Back</a>"
+        return "<h1>✔ Success! Request Sent.</h1><a href='/'>Go Back</a>"
     except Exception as e:
-        return f"Error: {e}"
+        return f"Error saving order: {e}"
 
 @app.route('/portal/<role>')
 def portal(role):
     sheet = get_sheet()
     if not sheet: return "Database Error"
-    rows = sheet.get_all_records()
     
-    # Inventory Balance Logic (+1 / -1)
+    rows = sheet.get_all_records()
     balances = {}
+    
     for r in rows:
-        c = r.get('Clinic')
+        # Using .get() prevents the app from crashing if a column name is slightly off
+        c = r.get('Clinic', 'Unknown')
         q = int(r.get('Qty', 0) or 0)
-        s = r.get('Status')
+        s = r.get('Status', '')
+        
         if c not in balances: balances[c] = 0
         if s == "In Store": balances[c] += q
         elif s == "Dispatched": balances[c] -= q
 
-    # Filter by Role
     if role == "coordinator":
-        orders = [r for r in rows if r['Status'] in ["Pending Approval", "Dist. Requested"]]
+        orders = [r for r in rows if r.get('Status') in ["Pending Approval", "Dist. Requested"]]
     elif role == "store":
-        orders = [r for r in rows if r['Status'] in ["Produced", "In Store", "Dist. Approved"]]
-    else: orders = []
+        orders = [r for r in rows if r.get('Status') in ["Produced", "In Store", "Dist. Approved"]]
+    else: 
+        orders = []
 
     return render_template('workflow.html', role=role, orders=orders, balances=balances)
 
