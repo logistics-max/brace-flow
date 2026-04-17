@@ -1,50 +1,72 @@
 import os
 import uuid
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
 app = Flask(__name__)
 
-# CONFIGURATION
-SHEET_NAME = "Brace_Logistics_Database"
-
 def get_sheet():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    # credentials.json must be in your main GitHub folder
-    creds = Credentials.from_service_account_file('credentials.json', scopes=scope)
-    client = gspread.authorize(creds)
-    return client.open(SHEET_NAME).sheet1
+    try:
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        # Make sure credentials.json is actually in your GitHub!
+        creds = Credentials.from_service_account_file('credentials.json', scopes=scope)
+        client = gspread.authorize(creds)
+        return client.open("Brace_Logistics_Database").sheet1
+    except Exception as e:
+        print(f"Google Sheet Connection Error: {e}")
+        return None
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# THIS IS THE PART THAT HANDLES THE BUTTON
 @app.route('/submit_request', methods=['POST'])
 def submit_request():
-    try:
-        sheet = get_sheet()
-        
-        # Pulling data from the form
-        clinic = request.form.get('clinic_name')
-        b_type = request.form.get('brace_type')
-        size = request.form.get('brace_size')
-        qty = request.form.get('quantity')
-        ts = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-        # Adding to Google Sheet
-        # Columns: Timestamp, Clinic, Type, Size, Qty, Status, ReceiptID
-        sheet.append_row([ts, clinic, b_type, size, qty, "Pending Approval", ""])
-        
-        # Success Redirect
-        return "<h1>✔ Order Sent to Coordinator!</h1><script>setTimeout(()=>{window.location.href='/';}, 2000);</script>"
+    sheet = get_sheet()
+    if not sheet: return "Database Connection Error"
     
+    try:
+        data = [
+            datetime.now().strftime("%Y-%m-%d %H:%M"),
+            request.form.get('clinic_name', 'Unknown'),
+            request.form.get('brace_type', 'AFO'),
+            request.form.get('brace_size', '4'),
+            request.form.get('quantity', '1'),
+            "Pending Approval",
+            ""
+        ]
+        sheet.append_row(data)
+        return "<h1>✔ Success!</h1><a href='/'>Go Back</a>"
     except Exception as e:
-        return f"<h1>Submit Failed</h1><p>Error: {str(e)}</p><a href='/'>Try again</a>"
+        return f"Error: {e}"
 
-# PORTALS AND DASHBOARD... (keep your existing portal/transition/dashboard code here)
+# Simple Dashboard logic to prevent crashes
+@app.route('/dashboard')
+def dashboard():
+    sheet = get_sheet()
+    if not sheet: return "Database Connection Error"
+    rows = sheet.get_all_records()
+    
+    # Defaults
+    balances = {}
+    total_in_store = 0
+    
+    for r in rows:
+        # Use .get() to prevent 'KeyError' (Red Screen)
+        c = r.get('Clinic', 'Unknown')
+        q = int(r.get('Qty', 0) or 0)
+        s = r.get('Status', '')
+        
+        if c not in balances: balances[c] = 0
+        if s == "In Store": 
+            balances[c] += q
+            total_in_store += q
+        elif s == "Dispatched":
+            balances[c] -= q
+            
+    return render_template('dashboard.html', balances=balances, total_in_store=total_in_store)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
