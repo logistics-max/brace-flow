@@ -2,19 +2,20 @@
 <html>
 <head>
     <title>Brace Requisition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { font-family: sans-serif; padding: 20px; background: #f4f7f9; }
-        .card { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
-        button { background: #1a73e8; color: white; font-weight: bold; cursor: pointer; }
+        .card { max-width: 400px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background: #1a73e8; color: white; font-weight: bold; font-size: 16px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>New Request</h2>
+        <h2 style="color: #1a73e8; margin-top: 0;">New Request</h2>
         <form action="/submit_request" method="POST">
             <label>Clinic Name:</label>
-            <input list="clinics" name="clinic_name" required>
+            <input list="clinics" name="clinic_name" required placeholder="Type to search...">
             <datalist id="clinics">
                 <option value="Abebech Gobena MCH Hospital">
                 <option value="Alert Comprehensive Hospital">
@@ -22,15 +23,19 @@
                 <option value="CURE Hospital Addis Ababa">
                 <option value="Felege Hiwot Hospital Bahirdar">
             </datalist>
+            
             <label>Brace Type:</label>
             <select name="brace_type">
                 <option value="AFO">AFO</option>
                 <option value="KAFO">KAFO</option>
             </select>
+            
             <label>Size (4-16):</label>
             <input type="number" name="brace_size" min="4" max="16" value="4">
+            
             <label>Quantity:</label>
             <input type="number" name="quantity" value="1" min="1">
+            
             <button type="submit">SUBMIT FOR APPROVAL</button>
         </form>
     </div>
