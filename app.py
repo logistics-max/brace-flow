@@ -7,15 +7,16 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# This function connects to your Google Sheet
 def get_sheet():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        # Make sure credentials.json is actually in your GitHub!
+        # IMPORTANT: credentials.json must be uploaded to your GitHub!
         creds = Credentials.from_service_account_file('credentials.json', scopes=scope)
         client = gspread.authorize(creds)
         return client.open("Brace_Logistics_Database").sheet1
     except Exception as e:
-        print(f"Google Sheet Connection Error: {e}")
+        print(f"Connection Error: {e}")
         return None
 
 @app.route('/')
@@ -30,43 +31,38 @@ def submit_request():
     try:
         data = [
             datetime.now().strftime("%Y-%m-%d %H:%M"),
-            request.form.get('clinic_name', 'Unknown'),
-            request.form.get('brace_type', 'AFO'),
-            request.form.get('brace_size', '4'),
-            request.form.get('quantity', '1'),
-            "Pending Approval",
-            ""
+            request.form.get('clinic_name'),
+            request.form.get('brace_type'),
+            request.form.get('brace_size'),
+            request.form.get('quantity'),
+            "Pending Approval",  # Initial Status for Coordinator
+            ""                   # Empty ReceiptID for now
         ]
         sheet.append_row(data)
-        return "<h1>✔ Success!</h1><a href='/'>Go Back</a>"
+        return "<h1>✔ Success! Sent to Coordinator.</h1><a href='/'>Back</a>"
     except Exception as e:
         return f"Error: {e}"
 
-# Simple Dashboard logic to prevent crashes
 @app.route('/dashboard')
 def dashboard():
     sheet = get_sheet()
-    if not sheet: return "Database Connection Error"
+    if not sheet: return "Database Error"
     rows = sheet.get_all_records()
     
-    # Defaults
     balances = {}
-    total_in_store = 0
-    
     for r in rows:
-        # Use .get() to prevent 'KeyError' (Red Screen)
-        c = r.get('Clinic', 'Unknown')
+        c = r.get('Clinic')
         q = int(r.get('Qty', 0) or 0)
-        s = r.get('Status', '')
+        s = r.get('Status')
         
         if c not in balances: balances[c] = 0
-        if s == "In Store": 
-            balances[c] += q
-            total_in_store += q
-        elif s == "Dispatched":
-            balances[c] -= q
+        # Math for your concept (+1 for store, -1 for dispatch)
+        if s == "In Store": balances[c] += q
+        elif s == "Dispatched": balances[c] -= q
             
-    return render_template('dashboard.html', balances=balances, total_in_store=total_in_store)
+    return render_template('dashboard.html', balances=balances)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    # This port setting is required for Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
