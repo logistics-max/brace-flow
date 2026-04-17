@@ -24,84 +24,49 @@
     </div>
 
     <div class="card">
-        <h2>Shoe Brace Entry</h2>
+        <h2>Shoe Brace Order Entry</h2>
         <form action="/submit" method="POST">
             <label>Clinic Name:</label>
-            <input list="clinics" name="clinic_name" placeholder="Search 70 clinics..." required>
+            <input list="clinics" name="clinic_name" placeholder="Type to search clinics..." required>
             <datalist id="clinics">
-                <option value="Abala/Mohammed Akle Memorial Hospital">
-                <option value="Abebech Gobena MCH Hospital">
-                <option value="Adama Referral Hospital">
-                <option value="Adare General Hospital/Busulo">
-                <option value="Addigrat Hospital">
-                <option value="Adola Hospital">
-                <option value="Alert Comprehensive Hospital">
-                <option value="Ambo Hospital">
-                <option value="Arbaminch Physical Rehabilitation Center">
-                <option value="Asossa Hospital">
-                <option value="Assela Referral Hospital+PRC">
-                <option value="Bale Goba Hospital">
-                <option value="Black Lion Hospital">
-                <option value="Bona">
-                <option value="Bonga">
-                <option value="Bule Hora">
-                <option value="Chero Zonal Hospital">
-                <option value="CURE Hospital Addis Ababa">
-                <option value="Debark General Hospital">
-                <option value="Debere Birhane Referral Hospital">
-                <option value="Debre Markos Hospital">
-                <option value="Debre Tabor Hospital">
-                <option value="Deder Hospital">
-                <option value="Dembi Dollo">
-                <option value="Dessie Physical Rehabilitation Center">
-                <option value="Dessie Referral Hospital">
-                <option value="Dilla University Referral Hospital">
-                <option value="Dubti Referral Hospital">
-                <option value="Felege Hiwot Hospital Bahirdar">
-                <option value="Filtu General Hospital">
-                <option value="Finote Selam Hospital">
-                <option value="Gambela Referral Hospital">
-                <option value="Gelemso General Hospital">
-                <option value="Gimbi and Ayra">
-                <option value="Gode Hospital">
-                <option value="Gondar University Hospital">
-                <option value="Grarbet Hospital Butajira">
-                <option value="Halaba Hospital">
-                <option value="Hawassa Referral Hospital">
-                <option value="Hiwot Fana Hospital Harrer">
-                <option value="Injibara Hospital">
-                <option value="Jimma University Hospital">
-                <option value="Jinka Hospital">
-                <option value="Karamara/Jigjiga Referral Hospital + PRC">
-                <option value="Kemise General Hospital">
-                <option value="Konso">
-                <option value="Lemlem Karl Hospital Maichew">
-                <option value="Mekelle Referral Hospital">
-                <option value="Metu Kari Referral Hospital">
-                <option value="Mizan Tepi University Hospital">
-                <option value="Moyale Hospital/Ginir">
-                <option value="Nekemt Referral Hospital">
-                <option value="Nigist Heleni Hospital Hossana">
-                <option value="Sabian General Hospital Dire Dawa">
-                <option value="Sawola General Hospital">
-                <option value="Selale Specialized Hospital">
-                <option value="Shambu">
-                <option value="Shashemene General Hospital">
-                <option value="St. Mary Hospital/Axum">
-                <option value="St. Paul Abet Hospital">
-                <option value="St. Peters Specialized Hospital">
-                <option value="Suhul Hospital">
-                <option value="Tirunesh Beijing General Hospital">
-                <option value="Woldiya Specialized Hospital">
-                <option value="Wolaita Sodo University Hospital">
-                <option value="Wolkite University Hospital">
-                <option value="Wolliso Hospital">
-                <option value="Worabe Specialized Hospital">
-                <option value="Yeka Kotebe Hospital/Zewditu">
+                <option value="Abala/Mohammed Akle Memorial Hospital"><option value="Abebech Gobena MCH Hospital">
+                <option value="Adama Referral Hospital"><option value="Adare General Hospital/Busulo">
+                <option value="Addigrat Hospital"><option value="Adola Hospital">
+                <option value="Alert Comprehensive Hospital"><option value="Ambo Hospital">
+                <option value="Arbaminch Physical Rehabilitation Center"><option value="Asossa Hospital">
+                <option value="Assela Referral Hospital+PRC"><option value="Bale Goba Hospital">
+                <option value="Black Lion Hospital"><option value="Bona"><option value="Bonga">
+                <option value="Bule Hora"><option value="Chero Zonal Hospital">
+                <option value="CURE Hospital Addis Ababa"><option value="Debark General Hospital">
+                <option value="Debere Birhane Referral Hospital"><option value="Debre Markos Hospital">
+                <option value="Debre Tabor Hospital"><option value="Deder Hospital">
+                <option value="Dembi Dollo"><option value="Dessie Physical Rehabilitation Center">
+                <option value="Dessie Referral Hospital"><option value="Dilla University Referral Hospital">
+                <option value="Dubti Referral Hospital"><option value="Felege Hiwot Hospital Bahirdar">
+                <option value="Filtu General Hospital"><option value="Finote Selam Hospital">
+                <option value="Gambela Referral Hospital"><option value="Gelemso General Hospital">
+                <option value="Gimbi and Ayra"><option value="Gode Hospital">
+                <option value="Gondar University Hospital"><option value="Grarbet Hospital Butajira">
+                <option value="Halaba Hospital"><option value="Hawassa Referral Hospital">
+                <option value="Hiwot Fana Hospital Harrer"><option value="Injibara Hospital">
+                <option value="Jimma University Hospital"><option value="Jinka Hospital">
+                <option value="Karamara/Jigjiga Referral Hospital + PRC"><option value="Kemise General Hospital">
+                <option value="Konso"><option value="Lemlem Karl Hospital Maichew">
+                <option value="Mekelle Referral Hospital"><option value="Metu Kari Referral Hospital">
+                <option value="Mizan Tepi University Hospital"><option value="Moyale Hospital/Ginir">
+                <option value="Nekemt Referral Hospital"><option value="Nigist Heleni Hospital Hossana">
+                <option value="Sabian General Hospital Dire Dawa"><option value="Sawola General Hospital">
+                <option value="Selale Specialized Hospital"><option value="Shambu">
+                <option value="Shashemene General Hospital"><option value="St. Mary Hospital/Axum">
+                <option value="St. Paul Abet Hospital"><option value="St. Peters Specialized Hospital">
+                <option value="Suhul Hospital"><option value="Tirunesh Beijing General Hospital">
+                <option value="Woldiya Specialized Hospital"><option value="Wolaita Sodo University Hospital">
+                <option value="Wolkite University Hospital"><option value="Wolliso Hospital">
+                <option value="Worabe Specialized Hospital"><option value="Yeka Kotebe Hospital/Zewditu">
                 <option value="Yirgalem Hospital">
             </datalist>
 
-            <label>Brace Type:</label>
+            <label>Shoe Brace Type:</label>
             <select name="brace_type">
                 <option value="AFO (Shoe Brace)">AFO (Shoe Brace)</option>
                 <option value="KAFO (Shoe Brace)">KAFO (Shoe Brace)</option>
@@ -109,19 +74,17 @@
 
             <label>Brace Size:</label>
             <select name="brace_size">
-                <option value="4">4</option><option value="5">5</option>
-                <option value="6">6</option><option value="7">7</option>
-                <option value="8">8</option><option value="9">9</option>
-                <option value="10">10</option><option value="11">11</option>
-                <option value="12">12</option><option value="13">13</option>
-                <option value="14">14</option><option value="15">15</option>
+                <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                <option value="13">13</option><option value="14">14</option><option value="15">15</option>
                 <option value="16">16</option>
             </select>
 
             <label>Quantity:</label>
             <input type="number" name="quantity" value="1" min="1">
 
-            <button type="submit">Submit to Logistics</button>
+            <button type="submit">Submit Order</button>
         </form>
     </div>
 </body>
