@@ -87,7 +87,7 @@ def transfer():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    with if __name__ == '__main__':
+  if __name__ == "__main__":
     app.run(debug=True)
         db.create_all()
         if Inventory.query.count() == 0:
