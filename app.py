@@ -5,7 +5,6 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Use your exact Google Sheet name
 SHEET_NAME = "Brace_Logistics_Database"
 
 def get_google_sheet():
@@ -29,13 +28,13 @@ def submit():
 
         sheet = get_google_sheet().sheet1
         sheet.append_row([date_str, clinic, brace, size, qty])
-        return "<h1>Success! Data Sent to Sheet.</h1><a href='/'>Back to Entry</a>"
+        return "<h1>Order Submitted Successfully!</h1><a href='/'>Back to Form</a>"
     except Exception as e:
         return f"<h1>Error: {e}</h1>"
 
 @app.route('/balancing')
 def balancing():
-    # Math from your handwritten drawing: Program(20k) -> Workshop(15k) -> Store(8k)
+    # These numbers come directly from your handwritten flowchart
     data = {
         'program': 20000,
         'workshop': 15000,
@@ -46,20 +45,11 @@ def balancing():
     return render_template('dashboard.html', data=data)
 
 @app.route('/workshop')
-def workshop():
-    return "<h1>Workshop Production Page</h1><p>Status: Active</p><a href='/'>Home</a>"
-
+def workshop(): return "<h1>Workshop Module Active</h1><a href='/'>Home</a>"
 @app.route('/program')
-def program():
-    return "<h1>Program Goals Page</h1><p>Target: 20,000 Braces</p><a href='/'>Home</a>"
-
+def program(): return "<h1>Program Module Active</h1><a href='/'>Home</a>"
 @app.route('/store')
-def store():
-    return "<h1>Store Logistics</h1><p>Current Stock: 8,000</p><a href='/'>Home</a>"
-
-@app.route('/distribution')
-def distribution():
-    return "<h1>Distribution Center</h1><p>Clinic Deliveries in Progress</p><a href='/'>Home</a>"
+def store(): return "<h1>Store Module Active</h1><a href='/'>Home</a>"
 
 if __name__ == "__main__":
     app.run()
