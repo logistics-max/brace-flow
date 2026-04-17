@@ -7,66 +7,44 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# --- CONFIGURATION ---
+# CONFIGURATION
 SHEET_NAME = "Brace_Logistics_Database"
 
 def get_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    # Ensure credentials.json is uploaded to your GitHub main folder
+    # credentials.json must be in your main GitHub folder
     creds = Credentials.from_service_account_file('credentials.json', scopes=scope)
     client = gspread.authorize(creds)
     return client.open(SHEET_NAME).sheet1
-
-# --- ROUTES ---
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/submit', methods=['POST'])
-def submit():
+# THIS IS THE PART THAT HANDLES THE BUTTON
+@app.route('/submit_request', methods=['POST'])
+def submit_request():
     try:
         sheet = get_sheet()
-        data = [
-            datetime.now().strftime("%Y-%m-%d %H:%M"),
-            request.form.get('clinic_name'),
-            request.form.get('brace_type'),
-            request.form.get('brace_size'),
-            request.form.get('quantity'),
-            "Pending Approval", # Initial Status
-            ""                  # Receipt ID placeholder
-        ]
-        sheet.append_row(data)
-        return "<h1>✔ Request Submitted!</h1><script>setTimeout(()=>{window.location.href='/';}, 2000);</script>"
-    except Exception as e:
-        return f"<h1>Error</h1><p>{str(e)}</p><a href='/'>Back</a>"
-
-@app.route('/portal/<role>')
-def portal(role):
-    sheet = get_sheet()
-    rows = sheet.get_all_records()
-    
-    # Calculate Live Inventory Balances (+1 for Store, -1 for Dispatch)
-    balances = {}
-    for r in rows:
-        clinic = r['Clinic']
-        qty = int(r.get('Qty', 0) or 0)
-        status = r['Status']
         
-        if clinic not in balances:
-            balances[clinic] = 0
-            
-        if status == "In Store":
-            balances[clinic] += qty
-        elif status == "Dispatched":
-            balances[clinic] -= qty
+        # Pulling data from the form
+        clinic = request.form.get('clinic_name')
+        b_type = request.form.get('brace_type')
+        size = request.form.get('brace_size')
+        qty = request.form.get('quantity')
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    # Filter orders based on the Department Role
-    if role == "coordinator":
-        orders = [r for r in rows if r['Status'] in ["Pending Approval", "Dist. Requested"]]
-    elif role == "workshop":
-        orders = [r for r in rows if r['Status'] == "In Production"]
-    elif role == "store":
-        orders = [r for r in rows if r['Status'] in ["Produced", "In Store", "Dist. Approved"]]
-    else:
-        orders = []
+        # Adding to Google Sheet
+        # Columns: Timestamp, Clinic, Type, Size, Qty, Status, ReceiptID
+        sheet.append_row([ts, clinic, b_type, size, qty, "Pending Approval", ""])
+        
+        # Success Redirect
+        return "<h1>✔ Order Sent to Coordinator!</h1><script>setTimeout(()=>{window.location.href='/';}, 2000);</script>"
+    
+    except Exception as e:
+        return f"<h1>Submit Failed</h1><p>Error: {str(e)}</p><a href='/'>Try again</a>"
+
+# PORTALS AND DASHBOARD... (keep your existing portal/transition/dashboard code here)
+
+if __name__ == "__main__":
+    app.run(debug=True)
