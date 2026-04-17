@@ -1,17 +1,10 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
 app = Flask(__name__)
-
-# This part stops the "get_inv" error you are seeing
-@app.context_processor
-def utility_processor():
-    def get_inv(category, item_name):
-        return "0"  # This is a placeholder so the page loads
-    return dict(get_inv=get_inv)
 
 # --- GOOGLE SHEETS CONFIG ---
 SHEET_NAME = "Brace_Logistics_Database"
@@ -24,26 +17,25 @@ def get_google_sheet():
 
 @app.route('/')
 def index():
-    # We pass an empty 's' variable because your HTML is looking for it
-    return render_template('index.html', s={})
+    return render_template('index.html')
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    clinic_name = request.form.get('clinic_name')
-    brace_type = request.form.get('brace_type')
-    quantity = request.form.get('quantity')
-    
-    now = datetime.now()
-    date_str = now.strftime("%Y-%m-%d %H:%M:%S")
-    day_str = now.strftime("%A")
-    month_str = now.strftime("%B")
-
     try:
+        clinic = request.form.get('clinic_name')
+        brace = request.form.get('brace_type')
+        qty = request.form.get('quantity')
+        
+        now = datetime.now()
+        date_str = now.strftime("%Y-%m-%d %H:%M:%S")
+        day_str = now.strftime("%A")
+        month_str = now.strftime("%B")
+
         sheet = get_google_sheet()
-        sheet.append_row([date_str, day_str, month_str, clinic_name, brace_type, quantity])
+        sheet.append_row([date_str, day_str, month_str, clinic, brace, qty])
         return "<h1>Success! Data sent to Google Sheets.</h1><a href='/'>Back to Form</a>"
     except Exception as e:
-        return f"<h1>Error: {e}</h1>"
+        return f"<h1>Error: {e}</h1><p>Ensure your Sheet is shared with the email in credentials.json</p>"
 
 if __name__ == "__main__":
     app.run(debug=True)
