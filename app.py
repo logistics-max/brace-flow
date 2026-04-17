@@ -1,17 +1,14 @@
-import os
-from flask import Flask, render_template, request
+import uuid
+from flask import Flask, render_template, request, redirect
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
 app = Flask(__name__)
-
-# CONFIGURATION
 SHEET_NAME = "Brace_Logistics_Database"
 
 def get_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    # Ensure credentials.json is in your main GitHub folder
     creds = Credentials.from_service_account_file('credentials.json', scopes=scope)
     client = gspread.authorize(creds)
     return client.open(SHEET_NAME).sheet1
@@ -20,35 +17,61 @@ def get_sheet():
 def index():
     return render_template('index.html')
 
+# 1. PRODUCTION REQUEST (Clinic Team)
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
-        # Capture Form Data
-        clinic = request.form.get('clinic_name')
-        brace = request.form.get('brace_type')
-        size = request.form.get('brace_size')
-        qty = request.form.get('quantity')
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        data = [
+            datetime.now().strftime("%Y-%m-%d %H:%M"),
+            request.form.get('clinic_name'),
+            request.form.get('brace_type'),
+            request.form.get('brace_size'),
+            request.form.get('quantity'),
+            "Pending Approval", # Initial Status
+            "" # Receipt ID placeholder
+        ]
+        get_sheet().append_row(data)
+        return "<h1>Production Request Sent!</h1><script>setTimeout(()=> {window.location.href='/';}, 2000);</script>"
+    except Exception as e: return str(e)
 
-        # Write to Google Sheet
-        sheet = get_sheet()
-        sheet.append_row([timestamp, clinic, brace, size, qty])
+# 2. DEPARTMENT PORTALS
+@app.route('/portal/<role>')
+def portal(role):
+    sheet = get_sheet()
+    rows = sheet.get_all_records()
+    
+    # [span_2](start_span)Calculate Balance per Clinic as requested[span_2](end_span)
+    clinic_balances = {}
+    for r in rows:
+        c = r['Clinic']
+        q = int(r['Qty'])
+        if c not in clinic_balances: clinic_balances[c] = 0
+        if r['Status'] == "In Store": clinic_balances[c] += q
+        if r['Status'] == "Dispatched": clinic_balances[c] -= q
+
+    # Role-based filtering
+    if role == "coordinator":
+        orders = [r for r in rows if r['Status'] in ["Pending Approval", "Dist. Requested"]]
+    elif role == "workshop":
+        orders = [r for r in rows if r['Status'] == "In Production"]
+    elif role == "store":
+        orders = [r for r in rows if r['Status'] in ["Produced", "Dist. Approved"]]
+    else: orders = []
+
+    return render_template('workflow.html', role=role, orders=orders, balances=clinic_balances)
+
+# 3. STATUS UPDATES (The +1 / -1 Logic)
+@app.route('/transition/<int:row_idx>/<next_status>')
+def transition(row_idx, next_status):
+    sheet = get_sheet()
+    actual_row = row_idx + 2
+    
+    if next_status == "Dispatched":
+        receipt_id = f"M19-{uuid.uuid4().hex[:6].upper()}"
+        sheet.update_cell(actual_row, 7, receipt_id)
         
-        return f"""
-        <div style="text-align:center; padding:50px; font-family:sans-serif;">
-            <h1 style="color:green;">✔ Order Received!</h1>
-            <p>Sent to Sheet: {clinic} - {brace} (Size {size}) x{qty}</p>
-            <a href="/" style="padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">Enter Another Order</a>
-        </div>
-        """
-    except Exception as e:
-        return f"<h1 style='color:red;'>Error!</h1><p>{str(e)}</p><a href='/'>Try Again</a>"
-
-@app.route('/balancing')
-def balancing():
-    # Numbers from your handwritten drawing
-    stats = {'prog': 20000, 'work': 15000, 'store': 8000, 'gap1': 5000, 'gap2': 7000}
-    return render_template('dashboard.html', data=stats)
+    sheet.update_cell(actual_row, 6, next_status)
+    return redirect(request.referrer)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
